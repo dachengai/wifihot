@@ -1,4 +1,4 @@
-package com.dacheng.wifihot.wifi;
+package com.dacheng.wifi;
 
 /**
  * Created by dacheng on 2017/6/6.
@@ -20,8 +20,8 @@ public class WifiHostService extends WifiService {
     public Socket connectSpecific() {
         Socket socket = null;
         try {
-            System.out.println("WifiHostService.connectSpecific() start, port:" + GlobalConfig.port);
-            serverSocket = new ServerSocket(GlobalConfig.port);
+            System.out.println("WifiHostService.connectSpecific() start, port:" + WifiConfig.port);
+            serverSocket = new ServerSocket(WifiConfig.port);
             socket = serverSocket.accept();
 
             System.out.println("WifiHostService.connectSpecific() accepted, address:" + socket.getRemoteSocketAddress().toString());

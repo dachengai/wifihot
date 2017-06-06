@@ -1,10 +1,10 @@
-package com.dacheng.wifihot.wifi;
+package com.dacheng.wifi;
 
 /**
  * Created by dacheng on 2017/6/6.
  */
 
-public class GlobalConfig {
+public class WifiConfig {
 
     public static int port = 7850;
 }

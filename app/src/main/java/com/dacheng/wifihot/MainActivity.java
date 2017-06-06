@@ -1,27 +1,23 @@
 package com.dacheng.wifihot;
 
 import android.net.wifi.WifiConfiguration;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.dacheng.wifihot.wifi.ConnectPacket;
-import com.dacheng.wifihot.wifi.WifiApManager;
-import com.dacheng.wifihot.wifi.WifiDevice;
-import com.dacheng.wifihot.wifi.WifiHostService;
-import com.dacheng.wifihot.wifi.WifiScanListener;
-import com.dacheng.wifihot.wifi.WifiService;
-
-import java.util.ArrayList;
+import com.dacheng.wifi.ConnectPacket;
+import com.dacheng.wifi.WifiApManager;
+import com.dacheng.wifi.WifiHostService;
+import com.dacheng.wifi.WifiService;
 
 public class MainActivity extends AppCompatActivity {
-    private final static String TAG = "MainActivity";
+    private final static String TAG = "WifiHostService";
     WifiApManager wifiApManager;
     TextView textView1;
     private WifiService mHostService;

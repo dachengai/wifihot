@@ -1,4 +1,4 @@
-package com.dacheng.wifihot.wifi;
+package com.dacheng.wifi;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;

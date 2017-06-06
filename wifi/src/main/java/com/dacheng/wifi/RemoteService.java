@@ -1,4 +1,4 @@
-package com.dacheng.wifihot.wifi;
+package com.dacheng.wifi;
 
 /**
  * Created by dacheng on 2017/6/6.

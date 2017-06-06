@@ -1,4 +1,4 @@
-package com.dacheng.wifihot.wifi;
+package com.dacheng.wifi;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,5 @@
 
-package com.dacheng.wifihot.wifi;
+package com.dacheng.wifi;
 
 public class WifiDevice {
 
