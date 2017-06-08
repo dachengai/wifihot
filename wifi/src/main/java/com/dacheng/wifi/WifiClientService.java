@@ -17,6 +17,10 @@ public class WifiClientService extends WifiService {
         super(null);
         this.serverIP = serverIP;
     }
+    public WifiClientService(String serverIP,ReceiveListener listener) {
+        super(listener);
+        this.serverIP = serverIP;
+    }
 
     @Override
     public Socket connectSpecific() {

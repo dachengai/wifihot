@@ -65,6 +65,8 @@ public class ReceiveActivity extends AppCompatActivity {
                     msg.what = EVENT_PACKAGE;
                     msg.obj = packet;
                     mHandler.sendMessage(msg);
+                    //发给发送端，代表接收成功
+                    mReceiveService.send(new ConnectPacket(200));
                 }
             }
         };
@@ -115,7 +117,7 @@ public class ReceiveActivity extends AppCompatActivity {
     private void startConnect(){
         isActive = true;
         //开启socket服务 接收数据
-        mReceiveService = new WifiHostService();
+        mReceiveService = new WifiHostService(mListener);
         connect(200);
         textView2.setText("连接中..");
     }

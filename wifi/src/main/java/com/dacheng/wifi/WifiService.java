@@ -52,7 +52,7 @@ public abstract class WifiService implements RemoteService {
     public void stop() {
         while(sendingThread.isAlive() || receivingThread.isAlive() || connectingThread.isAlive()) {
             try {
-                Thread.sleep(550);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -138,7 +138,7 @@ public abstract class WifiService implements RemoteService {
 
                     }
 
-                    Thread.sleep(100);
+                    Thread.sleep(80);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -151,6 +151,7 @@ public abstract class WifiService implements RemoteService {
 
         public void cancel() {
             isAlive = false;
+            cancelSpecific();
             try {
                 if(outputStream != null) outputStream.close();
             } catch (IOException e) {
@@ -202,7 +203,7 @@ public abstract class WifiService implements RemoteService {
                         Log.e(TAG,"ReceivingThread: received! choise:" + packet.choiseIndex + " Queuelength:" + receivedQueue.size());
                     }
 
-                    Thread.sleep(100);
+                    Thread.sleep(80);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -218,6 +219,7 @@ public abstract class WifiService implements RemoteService {
 
         public void cancel() {
             isAlive = false;
+            cancelSpecific();
             try {
                 if(inputStream != null) inputStream.close();
             } catch (IOException e) {
