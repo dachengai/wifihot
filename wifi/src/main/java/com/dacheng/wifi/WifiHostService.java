@@ -4,27 +4,32 @@ package com.dacheng.wifi;
  * Created by dacheng on 2017/6/6.
  */
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class WifiHostService extends WifiService {
-
+    private final static String TAG = "WifiHostService";
     private ServerSocket serverSocket;
 
     public WifiHostService() {
-        super();
+        super(null);
+    }
+
+    public WifiHostService(ReceiveListener listener) {
+        super(listener);
     }
 
     @Override
     public Socket connectSpecific() {
         Socket socket = null;
         try {
-            System.out.println("WifiHostService.connectSpecific() start, port:" + WifiConfig.port);
-            serverSocket = new ServerSocket(WifiConfig.port);
+            Log.e(TAG,"WifiHostService.connectSpecific() start, port:" + WifiConfig.DEFAULT_PORT);
+            serverSocket = new ServerSocket(WifiConfig.DEFAULT_PORT);
             socket = serverSocket.accept();
-
-            System.out.println("WifiHostService.connectSpecific() accepted, address:" + socket.getRemoteSocketAddress().toString());
+            Log.e(TAG,"WifiHostService.connectSpecific() accepted, address:" + socket.getRemoteSocketAddress().toString());
 
         } catch (IOException e) {
             e.printStackTrace();

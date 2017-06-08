@@ -20,6 +20,7 @@ import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -194,5 +195,29 @@ public class WifiApManager {
 
 		Thread mythread = new Thread(runnable);
 		mythread.start();
+	}
+
+	/**
+	 * set wifi ap configuration
+	 * @param SSID
+	 * @param password
+     * @return
+     */
+	public boolean setWifiApConfiguration(String SSID,String password){
+
+		if(TextUtils.isEmpty(password)) {
+			return false;
+		}
+		WifiConfiguration config = new WifiConfiguration();
+		config.SSID = SSID;
+		config.preSharedKey = password;
+		config.status = WifiConfiguration.Status.ENABLED;
+		config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+		config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+		config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+		config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+		config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+		config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+		return setWifiApConfiguration(config);
 	}
 }

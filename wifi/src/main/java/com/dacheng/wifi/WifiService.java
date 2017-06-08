@@ -1,9 +1,9 @@
 package com.dacheng.wifi;
 
 import android.content.Context;
-import android.net.wifi.WifiInfo;
+import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
-import android.text.format.Formatter;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ import java.util.LinkedList;
  */
 
 public abstract class WifiService implements RemoteService {
-
+    private final static String TAG = "WifiService";
     protected final int helloMessage = 100;
 
     protected Socket socket = null;
@@ -32,12 +32,12 @@ public abstract class WifiService implements RemoteService {
     private ReceivingThread receivingThread;
     private ConnectingThread connectingThread;
 
-    public WifiService() {
+    public WifiService(ReceiveListener listener) {
         toSendQueue = new LinkedList<ConnectPacket>();
         receivedQueue = new LinkedList<ConnectPacket>();
 
         sendingThread = new SendingThread();
-        receivingThread = new ReceivingThread();
+        receivingThread = new ReceivingThread(listener);
         connectingThread = new ConnectingThread();
     }
 
@@ -71,48 +71,54 @@ public abstract class WifiService implements RemoteService {
     }
 
     public void send(ConnectPacket gamePacket) {
-        System.out.println("Run send");
+        Log.e(TAG,"Run send");
         toSendQueue.offer(gamePacket);
     }
 
     public ConnectPacket receive() {
-        System.out.println("Run receive");
         if(!receivedQueue.isEmpty()){
-            System.out.println("receive something");
+            Log.e(TAG,"receive something");
             return receivedQueue.poll();
         }
         else{
-            System.out.println("receive null");
+            Log.e(TAG,"receive null");
             return null;
         }
 
     }
 
-    public static String getHostAdress(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = wifiManager.getConnectionInfo();
-        int ip = info.getIpAddress();
-        @SuppressWarnings("deprecation")
-        String ipText = Formatter.formatIpAddress(ip);
-
-        return ipText;
+    /**
+     * 获取开启便携热点后自身热点IP地址
+     * @param context
+     * @return
+     */
+    public static String getHotspotLocalIpAddress(Context context) {
+        WifiManager wifimanager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
+        DhcpInfo dhcpInfo = wifimanager.getDhcpInfo();
+        if(dhcpInfo != null) {
+            int address = dhcpInfo.serverAddress;
+            return ((address & 0xFF)
+                    + "." + ((address >> 8) & 0xFF)
+                    + "." + ((address >> 16) & 0xFF)
+                    + "." + ((address >> 24) & 0xFF));
+        }
+        return null;
     }
 
     class SendingThread extends Thread {
         private boolean isAlive = false;
         private OutputStream outputStream;
         private ObjectOutputStream objectOutputStream;
-        private OutputStreamWriter outputStreamWriter;
 
         @Override
         public void run() {
             isAlive = true;
             try {
-                System.out.println("start SendingThread");
+                Log.e(TAG,"start SendingThread");
                 while(!isConnected && isAlive)
                     Thread.sleep(250);
 
-                System.out.println("SendingThread: Sending connected");
+                Log.e(TAG,"SendingThread: Sending connected");
 
                 if(isAlive) {
                     outputStream = socket.getOutputStream();
@@ -121,18 +127,18 @@ public abstract class WifiService implements RemoteService {
                 ConnectPacket packet;
 
                 while(isAlive) {
-                    System.out.println("SendingThread: try send");
+                    Log.e(TAG,"SendingThread: try send");
 
                     if(!toSendQueue.isEmpty()) {
-                        System.out.println("SendingThread: Queue length:" + toSendQueue.size());
+                        Log.e(TAG,"SendingThread: Queue length:" + toSendQueue.size());
                         packet = toSendQueue.poll();
                         objectOutputStream.writeObject(packet);
                         objectOutputStream.flush();
-                        System.out.println("SendingThread: Sended! choise:" + packet.choiseIndex + "Queue length:" + toSendQueue.size());
+                        Log.e(TAG,"SendingThread: Sended! choise:" + packet.choiseIndex + "Queue length:" + toSendQueue.size());
 
                     }
 
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -157,39 +163,46 @@ public abstract class WifiService implements RemoteService {
         private boolean isAlive = false;
         private InputStream inputStream;
         private ObjectInputStream objectInputStream;
-        private InputStreamReader inputStreamReader;
+        private ReceiveListener mListener;
 
+        public ReceivingThread(ReceiveListener listener){
+            mListener = listener;
+        }
         @Override
         public void run() {
             isAlive = true;
             try {
-                System.out.println("start ReceivingThread");
+                Log.e(TAG,"start ReceivingThread");
                 while(!isConnected && isAlive)
                     Thread.sleep(250);
 
-                System.out.println("ReceivingThread: Receiving connected");
+                Log.e(TAG,"ReceivingThread: Receiving connected");
 
                 if(isAlive) {
-                    System.out.println("ReceivingThread: getInputStream");
+                    Log.e(TAG,"ReceivingThread: getInputStream");
                     inputStream = socket.getInputStream();
-                    System.out.println("ReceivingThread: create objectInputStream");
+                    Log.e(TAG,"ReceivingThread: create objectInputStream");
                     objectInputStream = new ObjectInputStream(inputStream);
-                    System.out.println("ReceivingThread: created objectInputStream");
+                    Log.e(TAG,"ReceivingThread: created objectInputStream");
                 }
                 ConnectPacket packet = null;
 
                 while(isAlive) {
 
-                    System.out.println("ReceivingThread: try readObject");
+                    Log.e(TAG,"ReceivingThread: try readObject");
                     packet = (ConnectPacket) objectInputStream.readObject();
-                    System.out.println("ReceivingThread: readed object");
+                    Log.e(TAG,"ReceivingThread: readed object");
 
                     if(packet != null){
-                        receivedQueue.offer(packet);
-                        System.out.println("ReceivingThread: received! choise:" + packet.choiseIndex + " Queuelength:" + receivedQueue.size());
+                        if (mListener!= null){//回调
+                            mListener.onReceive(packet);
+                        }else {//放队列里
+                            receivedQueue.offer(packet);
+                        }
+                        Log.e(TAG,"ReceivingThread: received! choise:" + packet.choiseIndex + " Queuelength:" + receivedQueue.size());
                     }
 
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -227,20 +240,20 @@ public abstract class WifiService implements RemoteService {
                         InputStream input = socket.getInputStream();
                         OutputStream output = socket.getOutputStream();
 
-                        System.out.println("ConnectingThread: send hello message");
+                        Log.e(TAG,"ConnectingThread: send hello message");
                         output.write(helloMessage);	// send your DEVICE_TYPE
 
-                        System.out.println("ConnectingThread: recieve hello message");
+                        Log.e(TAG,"ConnectingThread: recieve hello message");
                         int hello = input.read();
                         if(hello == helloMessage) {
-                            System.out.println("ConnectingThread: hello message is correct");
+                            Log.e(TAG,"ConnectingThread: hello message is correct");
 
                             isAlive = true;
                         }else{
-                            System.out.println("ConnectingThread: hello message is wrong:" + hello);
-                            System.out.println("ConnectingThread: recieve something:" + input.read());
-                            System.out.println("ConnectingThread: recieve something:" + input.read());
-                            System.out.println("ConnectingThread: recieve something:" + input.read());
+                            Log.e(TAG,"ConnectingThread: hello message is wrong:" + hello);
+                            Log.e(TAG,"ConnectingThread: recieve something:" + input.read());
+                            Log.e(TAG,"ConnectingThread: recieve something:" + input.read());
+                            Log.e(TAG,"ConnectingThread: recieve something:" + input.read());
                             socket.close();
                             socket = null;
 
@@ -258,7 +271,7 @@ public abstract class WifiService implements RemoteService {
 
                         isAlive = false;
 
-                        System.out.println("ConnectingThread: IOException:" + e1.toString());
+                        Log.e(TAG,"ConnectingThread: IOException:" + e1.toString());
                     }
                 }
 
@@ -281,4 +294,8 @@ public abstract class WifiService implements RemoteService {
         }
     }
 
+
+    public interface ReceiveListener{
+        void onReceive(ConnectPacket packet);
+    }
 }

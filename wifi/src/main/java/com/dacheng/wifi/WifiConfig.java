@@ -5,6 +5,16 @@ package com.dacheng.wifi;
  */
 
 public class WifiConfig {
-
-    public static int port = 7850;
+    /**
+     * wifi password
+     */
+    public static final String wifiPwd = "12345678";
+    /**
+     * wifi name
+     */
+    public static final String wifiName = "dacheng";
+    /**
+     * default port
+     */
+    public static final int DEFAULT_PORT = 49550;
 }
